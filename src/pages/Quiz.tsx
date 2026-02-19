@@ -1,20 +1,30 @@
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, CheckCircle2, XCircle, Trophy } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, Trophy, Sparkles } from "lucide-react";
 import { subjectQuestions } from "@/data/questions";
+import { useGame, getEncouragement, getRank } from "@/contexts/GameContext";
 import mascot from "@/assets/mascot.png";
+
+const QUESTIONS_PER_QUIZ = 10;
 
 const Quiz = () => {
   const { subject } = useParams<{ subject: string }>();
   const navigate = useNavigate();
-  const questions = useMemo(() => subjectQuestions[subject || ""] || [], [subject]);
+  const { completeQuiz } = useGame();
+
+  const allQuestions = useMemo(() => subjectQuestions[subject || ""] || [], [subject]);
+  const questions = useMemo(() => {
+    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, QUESTIONS_PER_QUIZ);
+  }, [allQuestions]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [xpEarned, setXpEarned] = useState(0);
 
   const current = questions[currentIndex];
 
@@ -29,6 +39,8 @@ const Quiz = () => {
 
   const handleNext = () => {
     if (currentIndex + 1 >= questions.length) {
+      const xp = completeQuiz(subject || "", score, questions.length);
+      setXpEarned(xp);
       setFinished(true);
     } else {
       setCurrentIndex((i) => i + 1);
@@ -47,6 +59,9 @@ const Quiz = () => {
 
   if (finished) {
     const percentage = Math.round((score / questions.length) * 100);
+    const rank = getRank(xpEarned);
+    const showEncouragement = percentage >= 70;
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <motion.div
@@ -58,9 +73,30 @@ const Quiz = () => {
           <h2 className="font-display text-3xl font-bold text-foreground mb-2">Quiz Complete!</h2>
           <p className="text-muted-foreground mb-4">{subject}</p>
           <div className="text-5xl font-display font-bold text-primary mb-2">{percentage}%</div>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-muted-foreground mb-2">
             {score} / {questions.length} correct
           </p>
+          <motion.div
+            className="bg-gold/10 rounded-xl px-4 py-2 mb-4 inline-block"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.3, type: "spring" }}
+          >
+            <span className="text-lg font-bold text-gold">+{xpEarned} XP earned!</span>
+          </motion.div>
+
+          {showEncouragement && (
+            <motion.p
+              className="text-primary font-display font-bold text-lg mb-4 flex items-center justify-center gap-2"
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Sparkles className="w-5 h-5" />
+              {getEncouragement()}
+            </motion.p>
+          )}
+
           <div className="flex gap-3">
             <button
               onClick={() => navigate("/")}
@@ -70,15 +106,12 @@ const Quiz = () => {
             </button>
             <button
               onClick={() => {
-                setCurrentIndex(0);
-                setSelected(null);
-                setAnswered(false);
-                setScore(0);
-                setFinished(false);
+                // Reset with new random questions
+                window.location.reload();
               }}
               className="flex-1 bg-primary text-primary-foreground font-bold py-3 rounded-xl hover:opacity-90 transition-opacity"
             >
-              Retry
+              Play Again
             </button>
           </div>
         </motion.div>
@@ -102,7 +135,6 @@ const Quiz = () => {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6">
-        {/* Progress bar */}
         <div className="h-2 bg-muted rounded-full overflow-hidden mb-8">
           <motion.div
             className="h-full rounded-full bg-gradient-to-r from-xp to-primary"
@@ -153,12 +185,8 @@ const Quiz = () => {
                       {String.fromCharCode(65 + i)}
                     </span>
                     <span className="font-semibold text-foreground flex-1">{option}</span>
-                    {answered && i === current.correct && (
-                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                    )}
-                    {answered && i === selected && i !== current.correct && (
-                      <XCircle className="w-5 h-5 text-destructive shrink-0" />
-                    )}
+                    {answered && i === current.correct && <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />}
+                    {answered && i === selected && i !== current.correct && <XCircle className="w-5 h-5 text-destructive shrink-0" />}
                   </motion.button>
                 );
               })}

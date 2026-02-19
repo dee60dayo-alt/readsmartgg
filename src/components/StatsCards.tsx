@@ -1,14 +1,19 @@
 import { motion } from "framer-motion";
-import { BookOpen, Clock, Trophy, Target } from "lucide-react";
-
-const stats = [
-  { label: "Lessons Done", value: "47", icon: <BookOpen className="w-5 h-5" />, color: "text-primary" },
-  { label: "Time Spent", value: "12h", icon: <Clock className="w-5 h-5" />, color: "text-xp" },
-  { label: "Quizzes Aced", value: "23", icon: <Trophy className="w-5 h-5" />, color: "text-gold" },
-  { label: "Accuracy", value: "89%", icon: <Target className="w-5 h-5" />, color: "text-accent" },
-];
+import { BookOpen, Trophy, Target, Flame } from "lucide-react";
+import { useGame, getRank } from "@/contexts/GameContext";
 
 const StatsCards = () => {
+  const { state } = useGame();
+  const accuracy = state.totalAnswered > 0 ? Math.round((state.totalCorrect / state.totalAnswered) * 100) : 0;
+  const rank = getRank(state.xp);
+
+  const stats = [
+    { label: "Quizzes Done", value: state.totalQuizzes.toString(), icon: <BookOpen className="w-5 h-5" />, color: "text-primary" },
+    { label: "Streak", value: `${state.streak}🔥`, icon: <Flame className="w-5 h-5" />, color: "text-streak" },
+    { label: "Accuracy", value: `${accuracy}%`, icon: <Target className="w-5 h-5" />, color: "text-accent" },
+    { label: "Rank", value: rank.name, icon: <Trophy className="w-5 h-5" />, color: "text-gold" },
+  ];
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {stats.map((stat, i) => (
