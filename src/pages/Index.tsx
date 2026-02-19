@@ -15,8 +15,8 @@ const Index = () => {
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={mascot} alt="QuestLearn mascot" className="w-10 h-10" />
-            <h1 className="font-display text-xl font-bold text-foreground">QuestLearn</h1>
+            <img src={mascot} alt="ReadSmart mascot" className="w-10 h-10" />
+            <h1 className="font-display text-xl font-bold text-foreground">ReadSmart</h1>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-gold bg-gold/10 px-3 py-1.5 rounded-full">⚡ 3,720 XP</span>
@@ -39,7 +39,7 @@ const Index = () => {
 
         {/* Streak + Stats */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <StreakCounter days={14} />
+          <StreakCounter days={1} />
           <div className="flex-1">
             <StatsCards />
           </div>
