@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Calculator, BookText, Atom, Globe, Palette, Music } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Subject {
   name: string;
@@ -19,6 +20,7 @@ const subjects: Subject[] = [
 ];
 
 const SubjectCards = () => {
+  const navigate = useNavigate();
   return (
     <div>
       <h3 className="font-display text-xl font-bold text-foreground mb-4">📚 Subjects</h3>
@@ -32,6 +34,7 @@ const SubjectCards = () => {
             transition={{ delay: 0.3 + i * 0.08 }}
             whileHover={{ y: -4 }}
             whileTap={{ scale: 0.97 }}
+            onClick={() => navigate(`/quiz/${subject.name}`)}
           >
             <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${subject.color} flex items-center justify-center text-primary-foreground mb-3 group-hover:scale-110 transition-transform`}>
               {subject.icon}
