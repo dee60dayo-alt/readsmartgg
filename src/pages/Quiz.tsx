@@ -22,7 +22,7 @@ const Quiz = () => {
       const all = JSON.parse(saved) as { id: string; question: string; options: string[]; correct: number; subject?: string }[];
       return all
         .filter((q) => q.subject === subject)
-        .map((q, i) => ({ id: 9000 + i, question: q.question, options: q.options, correct: q.correct }));
+        .map((q, i) => ({ id: 9000 + i, question: q.question, options: q.options, correct: q.correct, explanation: undefined as string | undefined }));
     } catch {
       return [];
     }
