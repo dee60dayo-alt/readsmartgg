@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { GraduationCap, PenTool, FileText } from "lucide-react";
 import mascot from "@/assets/mascot.png";
 import XpBar from "@/components/XpBar";
 import StreakCounter from "@/components/StreakCounter";
@@ -12,6 +14,7 @@ import { useGame, getLevel, getXpInLevel, getRank } from "@/contexts/GameContext
 
 const Index = () => {
   const { state } = useGame();
+  const navigate = useNavigate();
   const level = getLevel(state.xp);
   const xpInLevel = getXpInLevel(state.xp);
   const rank = getRank(state.xp);
@@ -50,6 +53,46 @@ const Index = () => {
           <div className="flex-1">
             <StatsCards />
           </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-3 gap-3">
+          <motion.button
+            className="bg-card rounded-2xl p-4 shadow-md border border-border text-center hover:border-primary/50 transition-colors"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/tutorial/math")}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <GraduationCap className="w-7 h-7 text-primary mx-auto mb-2" />
+            <p className="text-xs font-bold text-foreground">Math Tutorial</p>
+          </motion.button>
+          <motion.button
+            className="bg-card rounded-2xl p-4 shadow-md border border-border text-center hover:border-primary/50 transition-colors"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/custom-questions")}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.35 }}
+          >
+            <PenTool className="w-7 h-7 text-streak mx-auto mb-2" />
+            <p className="text-xs font-bold text-foreground">My Questions</p>
+          </motion.button>
+          <motion.button
+            className="bg-card rounded-2xl p-4 shadow-md border border-border text-center hover:border-primary/50 transition-colors"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/summarizer")}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <FileText className="w-7 h-7 text-level mx-auto mb-2" />
+            <p className="text-xs font-bold text-foreground">Summarizer</p>
+          </motion.button>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
