@@ -3,7 +3,35 @@ export interface Question {
   question: string;
   options: string[];
   correct: number; // index of correct option
+  explanation?: string; // explanation shown after answering
 }
+
+export const subjectSources: Record<string, { name: string; url: string }[]> = {
+  Math: [
+    { name: "Khan Academy – Math", url: "https://www.khanacademy.org/math" },
+    { name: "Math is Fun", url: "https://www.mathsisfun.com/" },
+  ],
+  Reading: [
+    { name: "Khan Academy – Reading", url: "https://www.khanacademy.org/ela" },
+    { name: "ReadTheory", url: "https://readtheory.org/" },
+  ],
+  Science: [
+    { name: "Khan Academy – Science", url: "https://www.khanacademy.org/science" },
+    { name: "National Geographic Kids", url: "https://kids.nationalgeographic.com/science" },
+  ],
+  Geography: [
+    { name: "National Geographic Education", url: "https://education.nationalgeographic.org/" },
+    { name: "World Geography Games", url: "https://world-geography-games.com/" },
+  ],
+  Art: [
+    { name: "The Art Story", url: "https://www.theartstory.org/" },
+    { name: "Google Arts & Culture", url: "https://artsandculture.google.com/" },
+  ],
+  Music: [
+    { name: "musictheory.net", url: "https://www.musictheory.net/" },
+    { name: "Classic FM Learn", url: "https://www.classicfm.com/music-history/" },
+  ],
+};
 
 export const subjectQuestions: Record<string, Question[]> = {
   Math: [
