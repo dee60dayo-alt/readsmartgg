@@ -4,7 +4,7 @@ export interface NPC {
   name: string;
   avatar: string;
   xp: number;
-  baseGrowth: [number, number]; // min-max XP gained per quiz you play
+  baseGrowth: [number, number];
 }
 
 export interface DailyQuest {
@@ -28,6 +28,7 @@ export interface GameState {
   todayQuizzes: number;
   todayBest: number;
   npcXp: Record<string, number>;
+  username: string;
 }
 
 const DEFAULT_STATE: GameState = {
@@ -40,12 +41,8 @@ const DEFAULT_STATE: GameState = {
   subjectsPlayed: [],
   todayQuizzes: 0,
   todayBest: 0,
-  npcXp: {
-    Luna: 500,
-    Max: 300,
-    Aria: 200,
-    Leo: 100,
-  },
+  npcXp: { Luna: 500, Max: 300, Aria: 200, Leo: 100 },
+  username: "",
 };
 
 const NPC_PROFILES: NPC[] = [
@@ -71,13 +68,8 @@ export function getRank(xp: number) {
   return RANKS[0];
 }
 
-export function getLevel(xp: number) {
-  return Math.floor(xp / 500) + 1;
-}
-
-export function getXpInLevel(xp: number) {
-  return xp % 500;
-}
+export function getLevel(xp: number) { return Math.floor(xp / 500) + 1; }
+export function getXpInLevel(xp: number) { return xp % 500; }
 
 const ENCOURAGEMENTS = [
   "🔥 Amazing work! You're on fire!",
@@ -97,9 +89,10 @@ export function getEncouragement() {
 interface GameContextType {
   state: GameState;
   npcs: NPC[];
-  completeQuiz: (subject: string, correct: number, total: number) => number; // returns XP earned
+  completeQuiz: (subject: string, correct: number, total: number) => number;
   getDailyQuests: () => (DailyQuest & { completed: boolean })[];
   resetGame: () => void;
+  setUsername: (name: string) => void;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
@@ -109,12 +102,8 @@ function loadState(): GameState {
     const saved = localStorage.getItem("readsmart_game");
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Reset daily counters if it's a new day
       const today = new Date().toDateString();
-      if (parsed.lastPlayDate !== today) {
-        parsed.todayQuizzes = 0;
-        parsed.todayBest = 0;
-      }
+      if (parsed.lastPlayDate !== today) { parsed.todayQuizzes = 0; parsed.todayBest = 0; }
       return { ...DEFAULT_STATE, ...parsed };
     }
   } catch {}
@@ -124,60 +113,27 @@ function loadState(): GameState {
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<GameState>(loadState);
 
-  useEffect(() => {
-    localStorage.setItem("readsmart_game", JSON.stringify(state));
-  }, [state]);
+  useEffect(() => { localStorage.setItem("readsmart_game", JSON.stringify(state)); }, [state]);
 
-  const npcs: NPC[] = NPC_PROFILES.map((npc) => ({
-    ...npc,
-    xp: state.npcXp[npc.name] ?? npc.xp,
-  }));
+  const npcs: NPC[] = NPC_PROFILES.map((npc) => ({ ...npc, xp: state.npcXp[npc.name] ?? npc.xp }));
 
   const completeQuiz = useCallback((subject: string, correct: number, total: number) => {
     const percentage = Math.round((correct / total) * 100);
-    const xpEarned = Math.round(percentage * 2); // Max 200 XP per quiz
-
+    const xpEarned = Math.round(percentage * 2);
     setState((prev) => {
       const today = new Date().toDateString();
       const isNewDay = prev.lastPlayDate !== today;
       const newStreak = isNewDay
         ? prev.lastPlayDate
-          ? (() => {
-              const last = new Date(prev.lastPlayDate);
-              const now = new Date();
-              const diffDays = Math.floor((now.getTime() - last.getTime()) / 86400000);
-              return diffDays === 1 ? prev.streak + 1 : 1;
-            })()
+          ? (() => { const last = new Date(prev.lastPlayDate); const now = new Date(); const diffDays = Math.floor((now.getTime() - last.getTime()) / 86400000); return diffDays === 1 ? prev.streak + 1 : 1; })()
           : 1
         : prev.streak;
-
-      // NPCs grow when you play
       const newNpcXp = { ...prev.npcXp };
-      NPC_PROFILES.forEach((npc) => {
-        const [min, max] = npc.baseGrowth;
-        newNpcXp[npc.name] = (newNpcXp[npc.name] ?? npc.xp) + Math.floor(Math.random() * (max - min) + min);
-      });
-
-      const newSubjects = prev.subjectsPlayed.includes(subject)
-        ? prev.subjectsPlayed
-        : [...prev.subjectsPlayed, subject];
-
-      return {
-        ...prev,
-        xp: prev.xp + xpEarned,
-        totalQuizzes: prev.totalQuizzes + 1,
-        totalCorrect: prev.totalCorrect + correct,
-        totalAnswered: prev.totalAnswered + total,
-        streak: newStreak,
-        lastPlayDate: today,
-        subjectsPlayed: newSubjects,
-        todayQuizzes: (isNewDay ? 0 : prev.todayQuizzes) + 1,
-        todayBest: Math.max(isNewDay ? 0 : prev.todayBest, percentage),
-        npcXp: newNpcXp,
-      };
+      NPC_PROFILES.forEach((npc) => { const [min, max] = npc.baseGrowth; newNpcXp[npc.name] = (newNpcXp[npc.name] ?? npc.xp) + Math.floor(Math.random() * (max - min) + min); });
+      const newSubjects = prev.subjectsPlayed.includes(subject) ? prev.subjectsPlayed : [...prev.subjectsPlayed, subject];
+      return { ...prev, xp: prev.xp + xpEarned, totalQuizzes: prev.totalQuizzes + 1, totalCorrect: prev.totalCorrect + correct, totalAnswered: prev.totalAnswered + total, streak: newStreak, lastPlayDate: today, subjectsPlayed: newSubjects, todayQuizzes: (isNewDay ? 0 : prev.todayQuizzes) + 1, todayBest: Math.max(isNewDay ? 0 : prev.todayBest, percentage), npcXp: newNpcXp };
     });
-
-    return Math.round(percentage * 2);
+    return xpEarned;
   }, []);
 
   const getDailyQuests = useCallback((): (DailyQuest & { completed: boolean })[] => {
@@ -190,13 +146,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return quests.map((q) => ({ ...q, completed: q.check(state) }));
   }, [state]);
 
-  const resetGame = useCallback(() => {
-    setState({ ...DEFAULT_STATE });
-    localStorage.removeItem("readsmart_game");
-  }, []);
+  const resetGame = useCallback(() => { setState({ ...DEFAULT_STATE }); localStorage.removeItem("readsmart_game"); }, []);
+  const setUsername = useCallback((name: string) => { setState((prev) => ({ ...prev, username: name })); }, []);
 
   return (
-    <GameContext.Provider value={{ state, npcs, completeQuiz, getDailyQuests, resetGame }}>
+    <GameContext.Provider value={{ state, npcs, completeQuiz, getDailyQuests, resetGame, setUsername }}>
       {children}
     </GameContext.Provider>
   );
