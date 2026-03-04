@@ -7,6 +7,9 @@ import { ThemeProvider } from "next-themes";
 import { GameProvider } from "@/contexts/GameContext";
 import Index from "./pages/Index";
 import Quiz from "./pages/Quiz";
+import MathTutorial from "./pages/MathTutorial";
+import CustomQuestions from "./pages/CustomQuestions";
+import NoteSummarizer from "./pages/NoteSummarizer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +25,9 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/quiz/:subject" element={<Quiz />} />
+              <Route path="/tutorial/math" element={<MathTutorial />} />
+              <Route path="/custom-questions" element={<CustomQuestions />} />
+              <Route path="/summarizer" element={<NoteSummarizer />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

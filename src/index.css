@@ -154,3 +154,9 @@
     font-family: 'Nunito', sans-serif;
   }
 }
+
+/* Sharp-edged icons globally */
+svg.lucide {
+  stroke-linecap: square !important;
+  stroke-linejoin: miter !important;
+}
